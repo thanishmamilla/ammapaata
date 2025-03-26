@@ -234,7 +234,7 @@ const User = mongoose.model("User", UserSchema);
 const SECRET_KEY = "your_secret_key"; // Change this
 
 // Serve React build folder
-// app.use(express.static(path.join(__dirname, "build")));
+app.use(express.static(path.join(__dirname, "build")));
 
 // API Routes
 app.post("/signup", async (req, res) => {
