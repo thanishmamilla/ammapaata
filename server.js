@@ -247,6 +247,7 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
+  console.log("jaisriram");
   const user = await User.findOne({ username });
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ message: "Invalid credentials" });
@@ -256,13 +257,41 @@ app.post("/login", async (req, res) => {
 });
 
 // Like/Unlike Song
+// app.post("/like", async (req, res) => {
+//   console.log("haribol")
+//   const { token, songId, title, artist, image, url } = req.body;
+//   try {
+//     const { userId } = jwt.verify(token, SECRET_KEY);
+//     const user = await User.findById(userId);
+
+//     const existingSong = user.likedSongs.find((song) => song.id === songId);
+//     if (existingSong) {
+//       user.likedSongs = user.likedSongs.filter((song) => song.id !== songId);
+//     } else {
+//       user.likedSongs.push({ id: songId, title, artist, image, url });
+//     }
+
+//     await user.save();
+//     res.json({ likedSongs: user.likedSongs });
+//   } catch {
+//     res.status(401).json({ message: "Invalid token" });
+//   }
+// });
 app.post("/like", async (req, res) => {
-  const { token, songId, title, artist, image, url } = req.body;
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Authorization token missing or invalid" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
   try {
     const { userId } = jwt.verify(token, SECRET_KEY);
     const user = await User.findById(userId);
 
+    const { songId, title, artist, image, url } = req.body;
     const existingSong = user.likedSongs.find((song) => song.id === songId);
+
     if (existingSong) {
       user.likedSongs = user.likedSongs.filter((song) => song.id !== songId);
     } else {
@@ -271,7 +300,7 @@ app.post("/like", async (req, res) => {
 
     await user.save();
     res.json({ likedSongs: user.likedSongs });
-  } catch {
+  } catch (error) {
     res.status(401).json({ message: "Invalid token" });
   }
 });
@@ -293,16 +322,34 @@ app.post("/delete-song", async (req, res) => {
 });
 
 // Get Liked Songs
+// app.get("/liked-songs", async (req, res) => {
+//   const token = req.headers.authorization;
+//   try {
+//     const { userId } = jwt.verify(token, SECRET_KEY);
+//     const user = await User.findById(userId);
+//     res.json({ likedSongs: user.likedSongs });
+//   } catch {
+//     res.status(401).json({ message: "Invalid token" });
+//   }
+// });
+
 app.get("/liked-songs", async (req, res) => {
-  const token = req.headers.authorization;
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Authorization token missing or invalid" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
   try {
     const { userId } = jwt.verify(token, SECRET_KEY);
     const user = await User.findById(userId);
     res.json({ likedSongs: user.likedSongs });
-  } catch {
+  } catch (error) {
     res.status(401).json({ message: "Invalid token" });
   }
 });
+
 
 // Handle React Routes
 app.get("*", (req, res) => {
